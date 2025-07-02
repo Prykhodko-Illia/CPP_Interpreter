@@ -5,5 +5,6 @@
 #include "../Structures/Token/Token.cpp"
 class Tokenizer;
 class ShuntingYard;
+class Calculator;
 
 #endif //CLASSES_H

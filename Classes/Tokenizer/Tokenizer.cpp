@@ -16,6 +16,13 @@ bool isOperand(const char c) {
     return false;
 }
 
+bool isFunc(const std::string &t) {
+    for (const auto el : {"pow", "min", "max", "abs"}) {
+        if (t == el) return true;
+    }
+    return false;
+}
+
 std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
     std::vector<Token> result;
 
@@ -25,6 +32,7 @@ std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
     for (int i = 0; text[i] != '\0'; ++i) {
         if (text[i] == ' ' || isOperand(text[i]) || text[i] == ',') {
             if (!token.empty()) {
+                if (isFunc(token)) currentScope = "function";
                 result.emplace_back(token, currentScope);
             }
 
@@ -37,13 +45,10 @@ std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
 
         if (isNumber(text[i]) && currentScope != "string") {
             if (currentScope.empty()) currentScope = "number";
-
-            token += text[i];
         } else {
             if (currentScope.empty()) currentScope = "string";
-
-            token += text[i];
         }
+        token += text[i];
     }
 
     if (!token.empty()) {

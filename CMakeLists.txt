@@ -10,4 +10,6 @@ add_executable(Interpreter main.cpp
         Classes/ShuntingYard/ShuntingYard.h
         Structures/Token/Token.cpp
         Classes/classes.h
+        Classes/Calculator/Calculator.cpp
+        Classes/Calculator/Calculator.h
 )
