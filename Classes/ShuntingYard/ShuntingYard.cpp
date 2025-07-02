@@ -28,7 +28,7 @@ std::vector<Token> ShuntingYard::ConvertPolishNotation(const std::vector<Token> 
             continue;
         }
 
-        if (token.type == "string" || token.content == "(") {
+        if (token.type == "function" || token.content == "(") {
             stack.push(token);
             continue;
         }
@@ -40,7 +40,7 @@ std::vector<Token> ShuntingYard::ConvertPolishNotation(const std::vector<Token> 
 
             stack.pop();
 
-            if (!stack.empty() && stack.top().type == "string") {
+            if (!stack.empty() && stack.top().type == "function") {
                 pop_push(stack, result);
             }
             continue;
