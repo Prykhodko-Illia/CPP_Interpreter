@@ -23,7 +23,7 @@ std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
     std::string token;
 
     for (int i = 0; text[i] != '\0'; ++i) {
-        if (text[i] == ' ' || isOperand(text[i])) {
+        if (text[i] == ' ' || isOperand(text[i]) || text[i] == ',') {
             if (!token.empty()) {
                 result.emplace_back(token, currentScope);
             }
@@ -44,6 +44,10 @@ std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
 
             token += text[i];
         }
+    }
+
+    if (!token.empty()) {
+        result.emplace_back(token, currentScope);
     }
 
     return result;
