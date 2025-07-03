@@ -19,6 +19,11 @@ void pop_push(std::stack<Token> &stack, std::vector<Token> &result) {
 }
 
 std::vector<Token> ShuntingYard::ConvertPolishNotation(const std::vector<Token> &tokens) {
+    if (tokens.empty()) {
+        std::cout << "There are no tokens to convert" << std::endl;
+        exit(-1);
+    }
+
     std::vector<Token> result;
     std::stack<Token> stack;
     for (auto &token : tokens) {

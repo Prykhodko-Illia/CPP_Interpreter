@@ -38,8 +38,8 @@ std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
 
             currentScope = "";
             token = "";
-
-            if (text[i] != ' ') result.emplace_back(text[i], "operand");
+            if (text[i] == '(' || text[i] == ')') result.emplace_back(text[i], "brackets");
+            else if (text[i] != ' ') result.emplace_back(text[i], "operand");
             continue;
         }
 
@@ -56,4 +56,60 @@ std::vector<Token> Tokenizer::tokenPartite(const std::string &text){
     }
 
     return result;
+}
+
+void operationsCheck(const std::vector<Token> &tokens) {
+    std::string lastTokenType;
+    std::string lastTokenContent;
+
+    for (const auto &token : tokens) {
+        if (token.type == "string") {
+            std::cout << "Unresolved token name: " << token.content << std::endl;
+            exit(-1);
+        }
+
+        if (token.type == lastTokenType && token.content != "(" && token.content != ")") {
+            if (token.type == "number")
+                std::cout << "Invalid expression: two consecutive numbers: ";
+            else if (token.type == "operand")
+                std::cout << "Invalid expression: two consecutive operands: ";
+            std::cout << lastTokenContent << " " << token.content << std::endl;
+            exit(-1);
+        }
+
+        lastTokenType = token.type;
+        lastTokenContent = token.content;
+    }
+}
+
+void bracketsCheck(const std::vector<Token> &tokens) {
+    std::stack<std::string> stack;
+    for (const auto &token : tokens) {
+        if (token.type != "brackets") continue;
+
+        if (token.content == "(") stack.push(token.content);
+        else if (token.content == ")") {
+            if (stack.empty()) {
+                std::cout << "Brackets problem: ')' before the '('" << std::endl;
+                exit(-1);
+            }
+            stack.pop();
+        }
+    }
+
+    if (!stack.empty()) {
+        std::cout << "Brackets problem: '(' is not closed" << std::endl;
+        exit(-1);
+    }
+}
+
+std::vector<Token> Tokenizer::tokensCheck(const std::vector<Token> &tokens) {
+    if (tokens.empty()) {
+        std::cout << "There are no tokens to check" << std::endl;
+        exit(-1);
+    }
+    operationsCheck(tokens);
+    bracketsCheck(tokens);
+
+    return tokens;
 }
