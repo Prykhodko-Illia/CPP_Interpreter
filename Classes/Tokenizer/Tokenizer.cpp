@@ -111,10 +111,10 @@ void bracketsCheck(const std::vector<Token> &tokens) {
     for (const auto &token : tokens) {
         if (token.type != "brackets") continue;
 
-        if (token.content == "(") stack.push(token.content);
-        else if (token.content == ")") {
+        if (token.content == "(" || token.content == "{") stack.push(token.content);
+        else if (token.content == ")" || token.content == "}") {
             if (stack.empty()) {
-                std::cout << "Brackets problem: ')' before the '('" << std::endl;
+                std::cout << "Brackets problem: closed bracket " << token.content << " before opened"<< std::endl;
                 exit(-1);
             }
             stack.pop();
@@ -122,7 +122,7 @@ void bracketsCheck(const std::vector<Token> &tokens) {
     }
 
     if (!stack.empty()) {
-        std::cout << "Brackets problem: '(' is not closed" << std::endl;
+        std::cout << "Brackets problem: Some bracket is not closed" << std::endl;
         exit(-1);
     }
 }
@@ -173,15 +173,104 @@ int templatesCheck(const std::vector<Token> &tokens, const std::vector<std::vect
     return -1;
 }
 
-std::vector<Token> Tokenizer::expressionCheck(const std::vector<Token> &tokens) {
+std::vector<Token> subVector(const std::vector<Token> &vector, const int start, const int end = std::numeric_limits<int>::max()) {
+    std::vector<Token> result;
+    if (end < start) {
+        std::cout << "Cannot do sub vectoring: end index bigger than start" << std::endl;
+        exit(-1);
+    }
+
+    if (start < 0) {
+        std::cout << "Cannot do sub vectoring: start index less than 0" << std::endl;
+        exit(-1);
+    }
+
+    for (int i = 0; i < vector.size(); ++i) {
+        if (i >= start && i <= end) result.push_back(vector[i]);
+    }
+
+    return result;
+}
+
+void expressionCheck(const std::vector<Token> &tokens) {
+    operationsCheck(tokens);
+}
+
+std::unordered_set<std::string> parametersCheck(const std::vector<Token> &tokens) {
+    if (tokens.size() % 2 == 0) {
+        std::cout << "Wrong functions parameters" << std::endl;
+        exit(-1);
+    }
+
+    std::unordered_set<std::string> parameters;
+
+    int i = 0;
+    for (auto &token : tokens) {
+        if (token.type == "string" && i % 2 == 0) {
+            if (parameters.contains(token.content)) {
+                std::cout << "Wrong parameters: " << token.content << " repeats twice" << std::endl;
+                exit(-1);
+            }
+            parameters.insert(token.content);
+        } else if (token.content == "," && i % 2 == 1) {}
+        else {
+            std::cout << "Wrong functions parameters" << tokens[i - 1].content << " " << token.content << std::endl;
+            exit(-1);
+        }
+
+        ++i;
+    }
+
+    return parameters;
+}
+
+int getIndexBySymbol(const std::vector<Token> &vector, const std::string &symbol) {
+    for (int i = 0; i < vector.size(); ++i) {
+        if (vector[i].content == symbol) return i;
+    }
+
+    std::cout << "There are no such symbol in the vector" << std::endl;
+    return -1;
+}
+
+std::vector<Token> Tokenizer::inputCheck(const std::vector<Token> &tokens) {
     if (tokens.empty()) {
         std::cout << "There are no tokens to check" << std::endl;
         exit(-1);
     }
 
-    templatesCheck(tokens, templates);
-    operationsCheck(tokens);
     bracketsCheck(tokens);
+
+    const int templateNumber = templatesCheck(tokens, templates);
+    if (templateNumber == -1) return tokens;
+
+    if (templateNumber == 0) {
+        std::string variableName = tokens[1].content;
+        std::vector<Token> expression = subVector(tokens, 3);
+        expressionCheck(expression);
+    }
+
+    if (templateNumber == 1) {
+        std::string functionName = tokens[1].content;
+        std::vector<Token> parameters = subVector(tokens,
+        getIndexBySymbol(tokens, "(") + 1, getIndexBySymbol(tokens, ")") - 1);
+        parametersCheck(parameters);
+
+        std::vector<Token> expression = subVector(tokens,
+                getIndexBySymbol(tokens, "{") + 1, getIndexBySymbol(tokens, "}") - 1);
+        expressionCheck(expression);
+    }
+
+    if (templateNumber == 2) {
+        std::string functionName = tokens[1].content;
+        std::vector<Token> parameters = subVector(tokens,
+        getIndexBySymbol(tokens, "(") + 1, getIndexBySymbol(tokens, ")") - 1);
+        parametersCheck(parameters);
+
+        std::vector<Token> expression = subVector(tokens,
+                getIndexBySymbol(tokens, "{") + 1, getIndexBySymbol(tokens, "}") - 1);
+        expressionCheck(expression);
+    }
 
     return tokens;
 }

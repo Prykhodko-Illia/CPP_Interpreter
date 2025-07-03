@@ -3,7 +3,7 @@
 double Application::Evaluate(const std::string &expression) {
     return Calculator::CalculatePolishNotation(
         ShuntingYard::ConvertPolishNotation(
-            Tokenizer::expressionCheck(
+            Tokenizer::inputCheck(
                 Tokenizer::tokenPartite(
                         expression
                         ))));
