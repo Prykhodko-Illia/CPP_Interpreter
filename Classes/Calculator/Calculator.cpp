@@ -1,6 +1,11 @@
 ﻿#include "Calculator.h"
 
 double Calculator::CalculatePolishNotation(const std::vector<Token> &tokens) {
+    if (tokens.empty()) {
+        std::cout << "There are no tokens to calculate" << std::endl;
+        exit(-1);
+    }
+
     std::stack<double> stack;
 
     for (auto &token : tokens) {
