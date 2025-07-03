@@ -12,4 +12,6 @@ add_executable(Interpreter main.cpp
         Classes/classes.h
         Classes/Calculator/Calculator.cpp
         Classes/Calculator/Calculator.h
+        Classes/Application/Application.cpp
+        Classes/Application/Application.h
 )
