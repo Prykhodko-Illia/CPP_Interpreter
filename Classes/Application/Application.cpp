@@ -3,17 +3,26 @@
 std::vector<std::vector<std::string>> templates = {
     {"var", "*string", "=", "expression"},
     {"def", "*string", "(", "...", ")", "{", "expression", "}"},
-    {"var", "*string", "(", "...", ")", "=", "{", "expression", "}"}
+    {"var", "*string", "(", "...", ")", "=", "{", "expression", "}"},
+    {"*string", "(", "...", ")"}
 };
 
-void operationsCheck(const std::vector<Token> &tokens, const std::unordered_set<std::string> &params = {}) {
+bool contains(const std::vector<std::string> &vector, const std::string &string) {
+    for (auto &el : vector) {
+        if (el == string) return true;
+    }
+
+    return false;
+}
+
+void operationsCheck(const std::vector<Token> &tokens, const std::vector<std::string> &params = {}) {
     std::string lastTokenType;
     std::string lastTokenContent;
 
     for (const auto &token : tokens) {
         if (token.type == "string") {
             if (params.empty() ||
-                !params.contains(token.content) ||
+                !contains(params, token.content) ||
                 variableInFile(token.content, "../variables.txt") != -1) {
                 std::cout << "Unresolved token name: " << token.content << std::endl;
                 exit(-1);
@@ -122,22 +131,22 @@ void expressionCheck(const std::vector<Token> &tokens) {
     operationsCheck(tokens);
 }
 
-std::unordered_set<std::string> parametersCheck(const std::vector<Token> &tokens) {
+std::vector<std::string> parametersCheck(const std::vector<Token> &tokens) {
     if (tokens.size() % 2 == 0) {
         std::cout << "Wrong functions parameters" << std::endl;
         exit(-1);
     }
 
-    std::unordered_set<std::string> parameters;
+    std::vector<std::string> parameters;
 
     int i = 0;
     for (auto &token : tokens) {
         if (token.type == "string" && i % 2 == 0) {
-            if (parameters.contains(token.content)) {
+            if (contains(parameters, token.content)) {
                 std::cout << "Wrong parameters: " << token.content << " repeats twice" << std::endl;
                 exit(-1);
             }
-            parameters.insert(token.content);
+            parameters.push_back(token.content);
         } else if (token.content == "," && i % 2 == 1) {}
         else {
             std::cout << "Wrong functions parameters" << tokens[i - 1].content << " " << token.content << std::endl;
@@ -177,6 +186,24 @@ int variableInFile(const std::string &name, const std::string &filepath) {
     }
 
     return -1;
+}
+
+std::vector<std::string> split(const char *line, const char delimiter) {
+    std::vector<std::string> result;
+
+    std::string temp;
+    for (int i = 0; line[i] != '\n' && line[i] != '\0'; i++) {
+        if (line[i] == delimiter) {
+            result.push_back(temp);
+            temp = "";
+            continue;
+        }
+
+        temp += line[i];
+    }
+    if (!temp.empty()) result.push_back(temp);
+
+    return result;
 }
 
 void Application::proceedInput(const std::string &input) {
@@ -220,12 +247,12 @@ void Application::proceedInput(const std::string &input) {
         std::cout << "Variable " << variableName << " was written to file as " << exprResult << std::endl;
     }
 
-    if (templateNumber == 1) {
+    if (templateNumber == 1 || templateNumber == 2) {
         const std::string functionName = tokens[1].content;
         const std::vector<Token> parameters = subVector(tokens,
         getIndexBySymbol(tokens, "(") + 1, getIndexBySymbol(tokens, ")") - 1);
 
-        std::unordered_set<std::string> params_checked = parametersCheck(parameters);
+        std::vector<std::string> params_checked = parametersCheck(parameters);
 
         const std::vector<Token> expression = subVector(tokens,
                 getIndexBySymbol(tokens, "{") + 1, getIndexBySymbol(tokens, "}") - 1);
@@ -273,14 +300,57 @@ void Application::proceedInput(const std::string &input) {
         std::cout << "Function " << functionName << " was written to file" << std::endl;
     }
 
-    if (templateNumber == 2) {
-        std::string functionName = tokens[1].content;
-        std::vector<Token> parameters = subVector(tokens,
-        getIndexBySymbol(tokens, "(") + 1, getIndexBySymbol(tokens, ")") - 1);
-        parametersCheck(parameters);
+    if (templateNumber == 3) {
+        const std::string functionName = tokens[0].content;
 
-        std::vector<Token> expression = subVector(tokens,
-                getIndexBySymbol(tokens, "{") + 1, getIndexBySymbol(tokens, "}") - 1);
-        expressionCheck(expression);
+        const int line = variableInFile(functionName,"..//functions.txt");
+
+        if (line == -1) {
+            std::cout << "Function " << functionName << "does not exist" << std::endl;
+            exit(-1);
+        }
+
+        FILE *file = fopen("..//functions.txt", "r");
+        if (!file) {
+            std::cout << "Error opening file" << std::endl;
+            exit(-1);
+        }
+
+        char buffer[40];
+        int i = 0;
+
+        std::string fileParams;
+        std::string expression;
+        while (fgets(buffer, 40, file)) {
+            if (line != i) {
+                ++i;
+                continue;
+            }
+
+            auto funcInfo = split(buffer, ':');
+            fileParams = funcInfo[1];
+            expression = funcInfo[2];
+        }
+
+        std::vector<std::string> allFileParams;
+        allFileParams = split(fileParams.c_str(), ',');
+
+        fclose(file);
+
+        const std::vector<Token> parameters = subVector(tokens,
+                getIndexBySymbol(tokens, "(") + 1, getIndexBySymbol(tokens, ")") - 1);
+
+        std::unordered_map<std::string, double> paramsValues;
+        int j = 0;
+        for (const auto &el : allFileParams) {
+            if (j % 2 == 1) ++j;
+            paramsValues[el] = std::stoi(parameters[j].content);
+            ++j;
+        }
+
+         const double exprResult = Calculator::CalculatePolishNotation(
+            ShuntingYard::ConvertPolishNotation(
+                Tokenizer::tokenPartite(expression)), paramsValues);
+        std::cout << exprResult << std::endl;
     }
 }

@@ -3,6 +3,7 @@
 
 #include "../Calculator/Calculator.h"
 #include "../Tokenizer/Tokenizer.h"
+#include <unordered_map>
 #include "../ShuntingYard/ShuntingYard.h"
 
 
