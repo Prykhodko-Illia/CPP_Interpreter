@@ -23,7 +23,8 @@ double getVarValue(const std::string &name) {
     return -1;
 }
 
-double Calculator::CalculatePolishNotation(const std::vector<Token> &tokens) {
+double Calculator::CalculatePolishNotation(const std::vector<Token> &tokens,
+                                            const std::unordered_map<std::string, double> &map) {
     if (tokens.empty()) {
         std::cout << "There are no tokens to calculate" << std::endl;
         exit(-1);
@@ -32,8 +33,16 @@ double Calculator::CalculatePolishNotation(const std::vector<Token> &tokens) {
     std::stack<double> stack;
 
     for (auto &token : tokens) {
-        if (token.type == "number") stack.push(std::stoi(token.content));
-        if (token.type == "string") stack.push(getVarValue(token.content));
+        if (token.type == "number") stack.push(std::stod(token.content));
+        if (token.type == "string") {
+            if (!map.empty()) {
+                if (map.contains(token.content)) {
+                    stack.push(map.find(token.content)->second);
+                }
+            } else {
+                stack.push(getVarValue(token.content));
+            }
+        }
 
         if (token.type == "operand" || token.type == "function") {
             double right = stack.top(); stack.pop();

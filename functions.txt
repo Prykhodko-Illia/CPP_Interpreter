@@ -1,2 +1,2 @@
-myfunc:f,b,a,:min(a,b)+max(a,b)
-myfu2nc:f,b,a,:min(a,b)+max(a,b)
+mynewCheck:a,b,:12*3
+myfunc:a,b,:min(a,b)+max(a,b)
