@@ -28,7 +28,7 @@ std::vector<Token> ShuntingYard::ConvertPolishNotation(const std::vector<Token> 
     std::stack<Token> stack;
     for (auto &token : tokens) {
 
-        if (token.type == "number") {
+        if (token.type == "number" || token.type == "string") {
             result.push_back(token);
             continue;
         }

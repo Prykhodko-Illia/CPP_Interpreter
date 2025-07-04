@@ -8,7 +8,7 @@
 
 class Application {
 public:
-    static double Evaluate(const std::string &expression);
+    static void proceedInput(const std::string &input);
 };
 
 

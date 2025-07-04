@@ -6,7 +6,7 @@ int main() {
     std::string input;
     std::getline(std::cin, input);
 
-    std::cout << Application::Evaluate(input) << std::endl;
+    Application::proceedInput(input);
 
     return 0;
 }

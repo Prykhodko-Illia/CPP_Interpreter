@@ -6,5 +6,6 @@
 class Tokenizer;
 class ShuntingYard;
 class Calculator;
+int variableInFile(const std::string &, const std::string &);
 
 #endif //CLASSES_H

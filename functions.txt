@@ -1,0 +1,2 @@
+myfunc:f,b,a,:min(a,b)+max(a,b)
+myfu2nc:f,b,a,:min(a,b)+max(a,b)
