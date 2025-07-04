@@ -12,7 +12,9 @@ void operationsCheck(const std::vector<Token> &tokens, const std::unordered_set<
 
     for (const auto &token : tokens) {
         if (token.type == "string") {
-            if (params.empty() || !params.contains(token.content)) {
+            if (params.empty() ||
+                !params.contains(token.content) ||
+                variableInFile(token.content, "../variables.txt") != -1) {
                 std::cout << "Unresolved token name: " << token.content << std::endl;
                 exit(-1);
             }
@@ -210,7 +212,7 @@ void Application::proceedInput(const std::string &input) {
             exit(-1);
         }
 
-        const std::string textToWrite = variableName + " : " + std::to_string(exprResult) + '\n';
+        const std::string textToWrite = variableName + ":" + std::to_string(exprResult) + '\n';
         fwrite(textToWrite.c_str(), sizeof(char), textToWrite.size(), file);
 
         fclose(file);

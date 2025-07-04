@@ -1,5 +1,28 @@
 ﻿#include "Calculator.h"
 
+double getVarValue(const std::string &name) {
+    FILE *file = fopen("../variables.txt", "r");
+    if (!file) {
+        std::cout << "Error opening file" << std::endl;
+        exit(-1);
+    }
+
+    char buffer[40];
+    while (fgets(buffer, 40, file)) {
+        std::string toCheck;
+        for (int j = 0; j < name.size(); ++j) toCheck += buffer[j];
+
+        if (toCheck == name) {
+            std::string resultStr;
+            for (size_t j = name.size() + 1; buffer[j] != '\n'; ++j) resultStr += buffer[j];
+
+            return std::stoi(resultStr);
+        }
+    }
+
+    return -1;
+}
+
 double Calculator::CalculatePolishNotation(const std::vector<Token> &tokens) {
     if (tokens.empty()) {
         std::cout << "There are no tokens to calculate" << std::endl;
@@ -10,6 +33,7 @@ double Calculator::CalculatePolishNotation(const std::vector<Token> &tokens) {
 
     for (auto &token : tokens) {
         if (token.type == "number") stack.push(std::stoi(token.content));
+        if (token.type == "string") stack.push(getVarValue(token.content));
 
         if (token.type == "operand" || token.type == "function") {
             double right = stack.top(); stack.pop();
